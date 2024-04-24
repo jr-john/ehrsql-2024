@@ -1,0 +1,207 @@
+CREATE TABLE cost (
+    row_id INTEGER,
+    subject_id INTEGER,
+    hadm_id INTEGER,
+    event_type TEXT,
+    event_id INTEGER,
+    chargetime TIME,
+    cost INTEGER,
+    PRIMARY KEY (row_id),
+    
+);
+
+CREATE TABLE diagnoses_icd (
+    row_id INTEGER,
+    subject_id INTEGER,
+    hadm_id INTEGER,
+    icd_code TEXT,
+    charttime TIME,
+    PRIMARY KEY (row_id),
+    FOREIGN KEY (event_id) REFERENCES cost(row_id)
+);
+
+CREATE TABLE procedures_icd (
+    row_id INTEGER,
+    subject_id INTEGER,
+    hadm_id INTEGER,
+    icd_code TEXT,
+    charttime TIME,
+    PRIMARY KEY (row_id),
+    FOREIGN KEY (event_id) REFERENCES cost(row_id)
+);
+
+CREATE TABLE labevents (
+    row_id INTEGER,
+    subject_id INTEGER,
+    hadm_id INTEGER,
+    itemid INTEGER,
+    charttime TIME,
+    valuenum INTEGER,
+    valueuom TEXT,
+    PRIMARY KEY (row_id),
+    FOREIGN KEY (event_id) REFERENCES cost(row_id)
+);
+
+CREATE TABLE prescriptions (
+    row_id INTEGER,
+    subject_id INTEGER,
+    hadm_id INTEGER,
+    starttime TIME,
+    stoptime TIME,
+    drug TEXT,
+    dose_val_rx TEXT,
+    dose_unit_rx TEXT,
+    route TEXT,
+    PRIMARY KEY (row_id),
+    FOREIGN KEY (event_id) REFERENCES cost(row_id)
+);
+
+CREATE TABLE chartevents (
+    row_id INTEGER,
+    subject_id INTEGER,
+    hadm_id INTEGER,
+    stay_id INTEGER,
+    itemid INTEGER,
+    charttime TIME,
+    valuenum INTEGER,
+    valueuom TEXT,
+    PRIMARY KEY (row_id),
+    
+);
+
+CREATE TABLE inputevents (
+    row_id INTEGER,
+    subject_id INTEGER,
+    hadm_id INTEGER,
+    stay_id INTEGER,
+    starttime TIME,
+    itemid INTEGER,
+    amount INTEGER,
+    PRIMARY KEY (row_id),
+    
+);
+
+CREATE TABLE outputevents (
+    row_id INTEGER,
+    subject_id INTEGER,
+    hadm_id INTEGER,
+    stay_id INTEGER,
+    charttime TIME,
+    itemid INTEGER,
+    value INTEGER,
+    PRIMARY KEY (row_id),
+    
+);
+
+CREATE TABLE microbiologyevents (
+    row_id INTEGER,
+    subject_id INTEGER,
+    hadm_id INTEGER,
+    charttime TIME,
+    spec_type_desc TEXT,
+    test_name TEXT,
+    org_name TEXT,
+    PRIMARY KEY (row_id),
+    
+);
+
+CREATE TABLE icustays (
+    row_id INTEGER,
+    subject_id INTEGER,
+    hadm_id INTEGER,
+    stay_id INTEGER,
+    first_careunit TEXT,
+    last_careunit TEXT,
+    intime TIME,
+    outtime TIME,
+    PRIMARY KEY (row_id),
+    FOREIGN KEY (stay_id) REFERENCES chartevents(stay_id),
+    FOREIGN KEY (stay_id) REFERENCES inputevents(stay_id),
+    FOREIGN KEY (stay_id) REFERENCES outputevents(stay_id)
+);
+
+CREATE TABLE transfers (
+    row_id INTEGER,
+    subject_id INTEGER,
+    hadm_id INTEGER,
+    transfer_id INTEGER,
+    eventtype TEXT,
+    careunit TEXT,
+    intime TIME,
+    outtime TIME,
+    PRIMARY KEY (row_id),
+    
+);
+
+CREATE TABLE admissions (
+    row_id INTEGER,
+    subject_id INTEGER,
+    hadm_id INTEGER,
+    admittime TIME,
+    dischtime TIME,
+    admission_type TEXT,
+    admission_location TEXT,
+    discharge_location TEXT,
+    insurance TEXT,
+    language TEXT,
+    marital_status TEXT,
+    age INTEGER,
+    PRIMARY KEY (row_id),
+    FOREIGN KEY (hadm_id) REFERENCES diagnoses_icd(hadm_id),
+    FOREIGN KEY (hadm_id) REFERENCES procedures_icd(hadm_id),
+    FOREIGN KEY (hadm_id) REFERENCES labevents(hadm_id),
+    FOREIGN KEY (hadm_id) REFERENCES prescriptions(hadm_id),
+    FOREIGN KEY (hadm_id) REFERENCES cost(hadm_id),
+    FOREIGN KEY (hadm_id) REFERENCES chartevents(hadm_id),
+    FOREIGN KEY (hadm_id) REFERENCES inputevents(hadm_id),
+    FOREIGN KEY (hadm_id) REFERENCES outputevents(hadm_id),
+    FOREIGN KEY (hadm_id) REFERENCES microbiologyevents(hadm_id),
+    FOREIGN KEY (hadm_id) REFERENCES icustays(hadm_id),
+    FOREIGN KEY (hadm_id) REFERENCES transfers(hadm_id)
+);
+
+CREATE TABLE patients (
+    row_id INTEGER,
+    subject_id INTEGER,
+    gender TEXT,
+    dob TIME,
+    dod TIME,
+    PRIMARY KEY (row_id),
+    FOREIGN KEY (subject_id) REFERENCES admissions(subject_id)
+);
+
+CREATE TABLE d_icd_diagnoses (
+    row_id INTEGER,
+    icd_code TEXT,
+    long_title TEXT,
+    PRIMARY KEY (row_id),
+    FOREIGN KEY (icd_code) REFERENCES diagnoses_icd(icd_code)
+);
+
+CREATE TABLE d_icd_procedures (
+    row_id INTEGER,
+    icd_code TEXT,
+    long_title TEXT,
+    PRIMARY KEY (row_id),
+    FOREIGN KEY (icd_code) REFERENCES procedures_icd(icd_code)
+);
+
+CREATE TABLE d_labitems (
+    row_id INTEGER,
+    itemid INTEGER,
+    label TEXT,
+    PRIMARY KEY (row_id),
+    FOREIGN KEY (itemid) REFERENCES labevents(itemid)
+);
+
+CREATE TABLE d_items (
+    row_id INTEGER,
+    itemid INTEGER,
+    label TEXT,
+    abbreviation TEXT,
+    linksto TEXT,
+    PRIMARY KEY (row_id),
+    FOREIGN KEY (itemid) REFERENCES chartevents(itemid),
+    FOREIGN KEY (itemid) REFERENCES inputevents(itemid),
+    FOREIGN KEY (itemid) REFERENCES outputevents(itemid)
+);
